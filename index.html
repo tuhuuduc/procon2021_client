@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        form>* {
+            display: block;
+            margin: 5px;
+        }
+
+        .result>* {
+            display: block;
+            margin: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <form id="action-form">
+        <label for="token">token</label>
+        <input type="text" name="token" id="token">
+        <label for="token">Test_case:</label>
+        <input type="number" name="Test_case" id="Test_case">
+        <label for="matchID">matchID</label>
+        <button>submit</button>
+    </form>
+    <div id="image">
+
+    </div>
+
+    <script>
+        let token, tc = 0;
+        let reload = false;
+        const url = 'https://procon2021.duckdns.org/procon2021/';
+        const form = document.getElementById("action-form")
+        form.addEventListener("submit", (e) => {
+            e.preventDefault()
+            token = document.getElementById("token").value.trim()
+            tc = document.getElementById("Test_case").value;
+
+
+            fetch(url + `tournament/`, {
+                method: "GET",
+                headers: {
+                    "Authorization": 'Bearer ' + token,
+                    "Content-Type": "application/json",
+                },
+            })
+                .then(response => response.json())
+                .then(data => { getRound(data[0].id); });
+
+        })
+
+        function getRound(tournamentID) {
+            fetch(url + `tournament/` + tournamentID, {
+                method: "GET",
+                headers: {
+                    "Authorization": 'Bearer ' + token,
+                    "Content-Type": "application/json"
+                },
+            })
+                .then(response => response.json())
+                .then(data => { getMatch(data.Rounds[0].id) });
+        }
+
+        function getMatch(roundID) {
+            fetch(url + `round/` + roundID, {
+                method: "GET",
+                headers: {
+                    "Authorization": 'Bearer ' + token,
+                    "Content-Type": "application/json"
+                },
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // getChallenge(data.Matches[tc].id_challenge);
+                    // getChallengeImage(data.Matches[tc].id_challenge);
+                    getChallengeID(data.Matches[tc].id);
+                });
+
+        }
+
+        function getChallengeID(matchID) {
+            fetch(url + `match/` + matchID, {
+                method: "GET",
+                headers: {
+                    "Authorization": 'Bearer ' + token,
+                    "Content-Type": "application/json"
+                },
+            })
+                .then(response => response.json())
+                .then(data => {
+                    getChallenge(data.id_challenge);
+                    getChallengeImage(data.id_challenge);
+                })
+        }
+
+
+        function getChallenge(challengeID) {
+            fetch(url + `challenge/raw/` + challengeID, {
+                method: "GET",
+                headers: {
+                    "Authorization": 'Bearer ' + token,
+                    "Content-Type": "text/plain"
+                },
+            })
+                .then(response => response.text())
+                .then(data => { console.log(data) })
+        }
+
+        function getChallengeImage(challengeID) {
+            fetch(url + `challenge/image/` + challengeID, {
+                method: "GET",
+                headers: {
+                    "Authorization": 'Bearer ' + token,
+                    "Content-Type": "application/json"
+                },
+            })
+                .then(response => response.json())
+                .then(data => { showImage(data) })
+        }
+
+        function showImage(data) {
+            var list = document.getElementById("image");
+
+            while (list.hasChildNodes()) {
+                list.removeChild(list.firstChild);
+            }
+
+            data.forEach(e => {
+                var image = new Image();
+                image.src = 'data:image/jpeg;base64,' + e;
+                list.appendChild(image);
+
+            });
+
+        }
+    </script>
+</body>
+
+</html>
