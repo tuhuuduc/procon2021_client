@@ -35,13 +35,21 @@
     <script>
         let token, tc = 0;
         let reload = false;
+<<<<<<< HEAD
         const url = 'http://112.137.129.202:8006/';
+=======
+        const url = 'https://procon2021.duckdns.org/procon2021/';
+>>>>>>> d6a11a1cb31cc354a1f3819f00802b4c0693817b
         const form = document.getElementById("action-form")
         form.addEventListener("submit", (e) => {
             e.preventDefault()
             token = document.getElementById("token").value.trim()
             tc = document.getElementById("Test_case").value;
+<<<<<<< HEAD
             console.log(tc);
+=======
+
+>>>>>>> d6a11a1cb31cc354a1f3819f00802b4c0693817b
 
             fetch(url + `tournament/`, {
                 method: "GET",
@@ -56,7 +64,10 @@
         })
 
         function getRound(tournamentID) {
+<<<<<<< HEAD
 
+=======
+>>>>>>> d6a11a1cb31cc354a1f3819f00802b4c0693817b
             fetch(url + `tournament/` + tournamentID, {
                 method: "GET",
                 headers: {
@@ -80,7 +91,10 @@
                 .then(data => {
                     // getChallenge(data.Matches[tc].id_challenge);
                     // getChallengeImage(data.Matches[tc].id_challenge);
+<<<<<<< HEAD
                     // getResult(data.Matches[tc].id_challenge);
+=======
+>>>>>>> d6a11a1cb31cc354a1f3819f00802b4c0693817b
                     getChallengeID(data.Matches[tc].id);
                 });
 
@@ -101,6 +115,7 @@
                 })
         }
 
+<<<<<<< HEAD
         function getResult(challengeID) {
             fetch(url + `solution/team/` + challengeID, {
                 method: "GET",
@@ -115,6 +130,8 @@
                     // getChallengeID(data.Matches[tc].id);
                 });
         }
+=======
+>>>>>>> d6a11a1cb31cc354a1f3819f00802b4c0693817b
 
         function getChallenge(challengeID) {
             fetch(url + `challenge/raw/` + challengeID, {
@@ -137,6 +154,7 @@
                 },
             })
                 .then(response => response.json())
+<<<<<<< HEAD
                 .then(data => { showImage(data); getChallengeScore(challengeID) })
         }
 
@@ -150,6 +168,9 @@
             })
                 .then(response => response.json())
                 .then(data => { console.log(data) })
+=======
+                .then(data => { showImage(data) })
+>>>>>>> d6a11a1cb31cc354a1f3819f00802b4c0693817b
         }
 
         function showImage(data) {
@@ -165,6 +186,7 @@
                 list.appendChild(image);
 
             });
+<<<<<<< HEAD
         }
 
         function submitResult(challengeID) {
@@ -180,8 +202,15 @@
                     getChallenge(data.id_challenge);
                     getChallengeImage(data.id_challenge);
                 })
+=======
+
+>>>>>>> d6a11a1cb31cc354a1f3819f00802b4c0693817b
         }
     </script>
 </body>
 
+<<<<<<< HEAD
 </html>
+=======
+</html>
+>>>>>>> d6a11a1cb31cc354a1f3819f00802b4c0693817b
