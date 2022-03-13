@@ -1,0 +1,5 @@
+1. Truy cập vào Endpoint: http://112.137.129.202/public/#/login
+2.Login bằng username/password 
+3. Sử dụng token ở ô input để gọi API tới : http://112.137.129.202
+
+Tài liệu API được để ở group facebook: https://www.facebook.com/groups/932220650826164
