@@ -140,10 +140,10 @@
         }
 
         function getChallengeScore(challengeID) {
-            fetch(url + `solution/team/` + 9, {
+            fetch(url + `solution/team/` + challengeID, {
                 method: "GET",
                 headers: {
-                    "Authorization": 'Bearer ' + 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwiaWF0IjoxNjQyOTE4OTc1LCJleHAiOjE2NDI5MzY5NzV9.1uChjvoZWwPsU2VHaXiPjvUdDqZ3ScZB89qBlscxxkg',
+                    "Authorization": 'Bearer ' + token,
                     "Content-Type": "application/json"
                 },
             })
