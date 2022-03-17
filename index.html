@@ -26,22 +26,23 @@
         <label for="token">Test_case:</label>
         <input type="number" name="Test_case" id="Test_case">
         <label for="matchID">matchID</label>
-        <button>submit</button>
+        <button>run</button>
+        <input type="button" id="submit" value="submit" onclick="submitResult()" disabled>
     </form>
     <div id="image">
 
     </div>
 
     <script>
-        let token, tc = 0;
+        let token, tc = 0, n, m, limitSelection, challengeID, soLuongHinh;
         let reload = false;
         const url = 'http://112.137.129.202:8006/';
         const form = document.getElementById("action-form")
         form.addEventListener("submit", (e) => {
             e.preventDefault()
+            document.getElementsByTagName("input")[2].removeAttribute("disabled");
             token = document.getElementById("token").value.trim()
-            tc = document.getElementById("Test_case").value;
-            console.log(tc);
+            tc = document.getElementById("Test_case").value || 0;
 
             fetch(url + `tournament/`, {
                 method: "GET",
@@ -77,9 +78,6 @@
             })
                 .then(response => response.json())
                 .then(data => {
-                    // getChallenge(data.Matches[tc].id_challenge);
-                    // getChallengeImage(data.Matches[tc].id_challenge);
-                    // getResult(data.Matches[tc].id_challenge);
                     getChallengeID(data.Matches[tc].id);
                 });
 
@@ -95,24 +93,10 @@
             })
                 .then(response => response.json())
                 .then(data => {
+                    challengeID = data.id_challenge;
                     getChallenge(data.id_challenge);
                     getChallengeImage(data.id_challenge);
                 })
-        }
-
-        function getResult(challengeID) {
-            fetch(url + `solution/team/` + challengeID, {
-                method: "GET",
-                headers: {
-                    "Authorization": 'Bearer ' + token,
-                    "Content-Type": "application/json"
-                },
-            })
-                .then(response => response.json())
-                .then(data => {
-                    console.log(data);
-                    // getChallengeID(data.Matches[tc].id);
-                });
         }
 
         function getChallenge(challengeID) {
@@ -124,8 +108,40 @@
                 },
             })
                 .then(response => response.text())
-                .then(data => { console.log(data) })
+                .then(data => {
+                    let a = (data.split('\n'));
+                    let s = formatString(a[1]);
+                    n = Number.parseInt(s.charAt(0)); m = Number.parseInt(s.charAt(2));
+                    soLuongHinh = n * m;
+                    s = formatString(a[2]);
+                    limitSelection = Number.parseInt(s);
+                    // submitResult(challengeID);
+                })
         }
+
+        function formatString(str) {
+            str = str.replace("# ", "");
+            return str;
+        }
+
+        function submitResult() {
+            // console.log(n, m, " ", limitSelection);
+            let s = dapAn.mangXoay() + "\n" + dapAn.lineDiChuyen();
+            console.log(s);
+            fetch(url + `solution/submit/` + challengeID, {
+                method: "POST",
+                headers: {
+                    "Authorization": 'Bearer ' + token,
+                    "Content-Type": "text/plain"
+                },
+                body: s,
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                })
+        }
+
 
         function getChallengeImage(challengeID) {
             fetch(url + `challenge/image/` + challengeID, {
@@ -136,19 +152,9 @@
                 },
             })
                 .then(response => response.json())
-                .then(data => { showImage(data); getChallengeScore(challengeID) })
-        }
-
-        function getChallengeScore(challengeID) {
-            fetch(url + `solution/team/` + challengeID, {
-                method: "GET",
-                headers: {
-                    "Authorization": 'Bearer ' + token,
-                    "Content-Type": "application/json"
-                },
-            })
-                .then(response => response.json())
-                .then(data => { console.log(data) })
+                .then(data => {
+                    showImage(data);
+                })
         }
 
         function showImage(data) {
@@ -166,21 +172,72 @@
             });
         }
 
-        function submitResult(challengeID) {
-            fetch(url + `solution/submit/` + challengeID, {
-                method: "GET",
-                headers: {
-                    "Authorization": 'Bearer ' + token,
-                    "Content-Type": "text/plan"
-                },
-            })
-                .then(response => response.json())
-                .then(data => {
-                    getChallenge(data.id_challenge);
-                    getChallengeImage(data.id_challenge);
-                })
-        }
+        class line {
+            x = Math.floor(Math.random() * n).toString(16);
+            y = Math.floor(Math.random() * m).toString(16);
+            soBuocDiChuyen = Math.min(Math.floor(Math.random() * 10) + 5, n * m);
+            mangDiChuyen = function () {
+                var s = '';
+                for (var i = 0; i < this.soBuocDiChuyen; i++) {
+                    var temp = Math.floor(Math.random() * 4);
+                    if (temp == 0) s = s + "L";
+                    if (temp == 1) s = s + "U";
+                    if (temp == 2) s = s + "D";
+                    if (temp == 3) s = s + "R";
+                }
+                return s;
+            };
+
+        };
+        var dapAn = {
+            mangXoay: function () {
+                for (var i = 0; i < soLuongHinh; i++)
+                    dapAn.mangXoay[i] = Math.floor(Math.random() * 4);
+                var s = '';
+                for (var i = 0; i < soLuongHinh; i++) s = s + dapAn.mangXoay[i];
+                return s;
+            },
+            soLine: Math.floor(Math.random() * 5) + 3,
+            lineDiChuyen: function () {
+                var l = [];
+                let result = this.soLine + "\n";
+                for (var i = 0; i < this.soLine; i++) {
+                    l[i] = new line();
+                    result += l[i].x + "" + l[i].y + "\n" + l[i].soBuocDiChuyen + "\n" + l[i].mangDiChuyen() + "\n";
+                }
+                return result;
+            }
+
+        };
+
     </script>
 </body>
 
 </html>
+
+
+<!-- function getChallengeScore(challengeID) {
+    fetch(url + `solution/team/` + challengeID, {
+        method: "GET",
+        headers: {
+            "Authorization": 'Bearer ' + token,
+            "Content-Type": "application/json"
+        },
+    })
+        .then(response => response.json())
+        .then(data => { console.log(data) })
+} -->
+<!-- function getResult(challengeID) {
+    fetch(url + `solution/team/` + challengeID, {
+        method: "GET",
+        headers: {
+            "Authorization": 'Bearer ' + token,
+            "Content-Type": "application/json"
+        },
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            // getChallengeID(data.Matches[tc].id);
+        });
+} -->
