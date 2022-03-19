@@ -1,9 +1,9 @@
 let soLuongHinh = 16;
-
+limitSelection = 4;
 class line {
-    x = Math.floor(Math.random() * soLuongHinh).toString(16);
-    y = Math.floor(Math.random() * soLuongHinh).toString(16);
-    soBuocDiChuyen = Math.floor(Math.random() * 10) + 5;
+    x = Math.floor(Math.random() * 4).toString(16);
+    y = Math.floor(Math.random() * 4).toString(16);
+    soBuocDiChuyen = Math.min(Math.floor(Math.random() * 10) + 5, limitSelection);
     mangDiChuyen = function () {
         var s = '';
         for (var i = 0; i < this.soBuocDiChuyen; i++) {
