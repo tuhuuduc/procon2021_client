@@ -16,6 +16,29 @@
             display: block;
             margin: 5px;
         }
+
+        .button {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        img {
+            padding: 8px 10px;
+        }
+
+        #image {
+            background-color: rgba(29, 115, 153, 0.68);
+        }
+
+        .content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .handle {
+            padding: 10px;
+        }
     </style>
 </head>
 
@@ -23,14 +46,47 @@
     <form id="action-form">
         <label for="token">token</label>
         <input type="text" name="token" id="token">
-        <label for="token">Test_case:</label>
+        <label for="Round">Round:</label>
+        <input type="number" name="Round" id="Round">
+        <label for="Test_case">Test_case:</label>
         <input type="number" name="Test_case" id="Test_case">
         <label for="matchID">matchID</label>
         <button>run</button>
-        <input type="button" id="submit" value="submit" onclick="submitResult()" disabled>
-        <input type="button" id="submit" value="rotate" onclick="findBestRotate()" disabled>
-        <input type="button" id="submit" value="delete" onclick="deleteSolution()" disabled>
-        <input type="button" id="submit" value="Score" onclick="getChallengeScore()" disabled>
+        <div class="button">
+            <input type="button" id="submit" value="submit" onclick="submitResult()" disabled>
+            <input type="button" id="submit" value="rotate" onclick="findBestRotate()" disabled>
+            <input type="button" id="submit" value="delete" onclick="deleteSolution()" disabled>
+            <input type="button" id="submit" value="Score" onclick="getChallengeScore()" disabled>
+        </div>
+        <div class="content">
+            <div>
+                <label for="COS">Cost of selection:</label>
+                <input type="number" name="COS" id="COS" disabled>
+            </div>
+            <div>
+                <label for="COM">Cost of move:</label>
+                <input type="number" name="COM" id="COM" disabled>
+            </div>
+            <div>
+                <label for="NOL">Number of line:</label>
+                <input type="number" name="NOL" id="NOL" disabled>
+            </div>
+        </div>
+        <div class="handle">
+            <div>
+                <label for="rotate">Rotate:</label>
+                <input type="text" name="rotate" id="rotate">
+            </div>
+            <!-- <div>
+                <label for="Pos">Pos:</label>
+                <input type="text" name="Pos" id="Pos">
+            </div> -->
+            <div style="padding: 10px 0px">
+                <label for="Result">Result:</label>
+                <textarea name="Result" style="width:200px; height:50px;" id="Result"></textarea>
+            </div>
+            <input type="button" id="handleSubmit" value="handleSubmit" onclick="getHandleSubmit()">
+        </div>
 
     </form>
     <div id="image">
@@ -38,20 +94,21 @@
     </div>
 
     <script>
-        let token, tc = 0, time = 0, n, m, limitSelection, challengeID, soLuongHinh;
+        let token, tc = 0, round = 0, time = 0, n, m, limitSelection, challengeID, soLuongHinh;
         let maxRotate = 4000000, bestRotate = '', maxMove = 400000, bestMove = '', costOfMove = 400000000;
         let reload = false;
-        const url = 'http://112.137.129.202:8006/';
+        const url = 'http://192.168.21.1/';
+        // const url = 'http://112.137.129.202:8006/'
         const form = document.getElementById("action-form")
         form.addEventListener("submit", (e) => {
             e.preventDefault()
-            time = 0;
-
-            document.getElementsByTagName("input")[2].removeAttribute("disabled");
+            time = 0; maxRotate = 4000000; bestRotate = ''; maxMove = 400000; bestMove = ''; costOfMove = 400000000
             document.getElementsByTagName("input")[3].removeAttribute("disabled");
             document.getElementsByTagName("input")[4].removeAttribute("disabled");
             document.getElementsByTagName("input")[5].removeAttribute("disabled");
+            document.getElementsByTagName("input")[6].removeAttribute("disabled");
             token = document.getElementById("token").value.trim()
+            round = (document.getElementById("Round").value - 1 > 0 ? document.getElementById("Round").value - 1 : 0);
             tc = document.getElementById("Test_case").value || 0;
 
             fetch(url + `tournament/`, {
@@ -62,7 +119,7 @@
                 },
             })
                 .then(response => response.json())
-                .then(data => { getRound(data[0].id); });
+                .then(data => { console.log(data); getRound(data[0].id); });
 
         })
 
@@ -75,7 +132,7 @@
                 },
             })
                 .then(response => response.json())
-                .then(data => { getMatch(data.Rounds[0].id) });
+                .then(data => { console.log(data); getMatch(data.Rounds[round].id) });
         }
 
         function getMatch(roundID) {
@@ -105,12 +162,12 @@
                 .then(data => {
                     challengeID = data.id_challenge;
                     getChallenge(data.id_challenge);
-                    getChallengeImage(data.id_challenge);
+                    // getChallengeImage(data.id_challenge);
                 })
         }
 
         function getChallenge(challengeID) {
-            fetch(url + `challenge/raw-challenge/` + challengeID, {
+            fetch(url + `challenge/raw/` + challengeID, {
                 method: "GET",
                 headers: {
                     "Authorization": 'Bearer ' + token,
@@ -120,15 +177,20 @@
                 .then(response => response.text())
                 .then(data => {
                     let a = (data.split('\n'));
-
                     let s = formatString(a[1]);
                     n = Number.parseInt(s.charAt(0)); m = Number.parseInt(s.charAt(2));
                     soLuongHinh = n * m;
+
                     for (let i = 0; i < soLuongHinh; i++)
                         bestRotate += '0';
                     s = formatString(a[2]);
                     limitSelection = Number.parseInt(s);
+                    s = formatString(a[3]);
 
+                    document.getElementById("COS").value = Number.parseInt(s.charAt(0));
+                    document.getElementById("COM").value = Number.parseInt(s.charAt(2));
+                    document.getElementById("NOL").value = limitSelection;
+                    getChallengeImage(challengeID);
                 })
         }
 
@@ -138,12 +200,14 @@
         }
 
         function submitResult() {
+            alert('Have been submited ' + time + ' solutions');
             if (time == 10) {
                 alert('Submit exceed 10 solutions');
                 return;
             }
             time++;
             let move = dapAn.lineDiChuyen(limitSelection);
+            // let move = '1\n20\n56\nLDRRDLLLURRDLLURRRDLLDLUUURDDDLUUURRRDLLURDDLLUURDRRDLDR'
             // console.log(bestRotate, move);
             let s = bestRotate + "\n" + move;
 
@@ -169,11 +233,46 @@
 
                             }
                         }
-                    }
+                    };
+                })
+        }
+
+        function getHandleSubmit() {
+            time++;
+            // let mo = document.getElementById("move").value;
+            let rotate = document.getElementById("rotate").value;
+            // let pos = document.getElementById("Pos").value;
+            let move = document.getElementById("Result").value;
+            // console.log(bestRotate, move);
+            let s = rotate + "\n" + move;
+
+            fetch(url + `solution/submit/` + challengeID, {
+                method: "POST",
+                headers: {
+                    "Authorization": 'Bearer ' + token,
+                    "Content-Type": "text/plain"
+                },
+                body: s,
+            })
+                .then(response => response.json())
+                .then(data => {
+                    let a = data.message.split(" ");
+                    if (a.length == 3) {
+                        if (maxMove > Number.parseInt(a[1])) {
+                            bestMove = move;
+                            maxMove = Number.parseInt(a[1]);
+                            console.log(a, maxMove);
+                        } else {
+                            if (maxMove == Number.parseInt(a[1])) {
+                                getChallengeScore(move);
+                            }
+                        }
+                    };
                 })
         }
 
         function findBestRotate() {
+            alert(`Have been submited ` + time + ` solutions`);
             if (time == 10) {
                 alert('Rotate exceed 10 solutions');
                 return;
@@ -247,7 +346,8 @@
 
         function showImage(data) {
             var list = document.getElementById("image");
-
+            var fileName;
+            var index = 0;
             while (list.hasChildNodes()) {
                 list.removeChild(list.firstChild);
             }
@@ -255,7 +355,19 @@
             data.forEach(e => {
                 var image = new Image();
                 image.src = 'data:image/jpeg;base64,' + e;
-                list.appendChild(image);
+                index++;
+                fileName = (index < 10 ? "shrksign_0" : "shrksign_") + index + '.gif';
+
+                var a = document.createElement('a');
+                a.href = image.src;
+                a.download = fileName;
+
+                a.appendChild(image);
+
+                list.appendChild(a);
+
+                if (index % n == 0)
+                    list.appendChild(document.createElement("br"));
 
             });
         }
@@ -279,7 +391,7 @@
         class line {
             x = Math.floor(Math.random() * n).toString(16);
             y = Math.floor(Math.random() * m).toString(16);
-            soBuocDiChuyen = Math.min(Math.floor(Math.random() * 10) + 5, soLuongHinh);
+            soBuocDiChuyen = Math.floor(Math.random() * soLuongHinh) + 5;
             mangDiChuyen = function () {
                 var s = '';
                 for (var i = 0; i < this.soBuocDiChuyen; i++) {
@@ -306,9 +418,9 @@
 
             lineDiChuyen: function (limitSelection) {
                 var l = [];
-
-                var result = limitSelection + "\n";
-                for (var i = 0; i < limitSelection; i++) {
+                var soLine = Math.floor(Math.random() * limitSelection) || 1;
+                var result = soLine + "\n";
+                for (var i = 0; i < soLine; i++) {
                     l[i] = new line();
                     result += l[i].x + "" + l[i].y + "\n" + l[i].soBuocDiChuyen + "\n" + l[i].mangDiChuyen() + "\n";
                 }
